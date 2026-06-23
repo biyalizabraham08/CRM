@@ -9,8 +9,11 @@ module.exports = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
+    const token = authHeader.startsWith('Bearer ')
+        ? authHeader.slice(7)
+        : authHeader;
+
     try {
-       
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Attach user info to request object
         next();

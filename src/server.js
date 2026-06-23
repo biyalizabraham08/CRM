@@ -2,12 +2,13 @@
 const dotenv = require('dotenv');
 const db = require('./config/db');
 const app = require('./app');
-
+const mongoose = require('mongoose');
 
 
 
 dotenv.config();
 db();
+
 
 
 
