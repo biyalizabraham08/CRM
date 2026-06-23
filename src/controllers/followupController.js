@@ -19,7 +19,7 @@ exports.createFollowup = async (req, res) => {
 
 exports.getAllFollowups = async (req,res) => {
     try{
-        const followups =  await Followup.find()
+        const followups =  await Followup.find().populate("leadId")
         res.status(200).json(followups)
     }
     catch (error) {
@@ -35,7 +35,7 @@ exports.getFollowupsByLead = async (req, res) => {
             return res.status(400).json({error:"Lead ID required"})
         }
 
-        const followups = await Followup.find({ lead: id });
+        const followups = await Followup.find({ lead: id }).populate("lead");
         res.json(followups);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -50,7 +50,7 @@ exports.getAllFollowupsById = async (req, res) => {
             return res.status(400).json({error:"Followup ID required"})
         }
 
-        const followups = await Followup.find({ _id: id });
+        const followups = await Followup.find({ _id: id }).populate("lead");
         res.json(followups);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -59,7 +59,7 @@ exports.getAllFollowupsById = async (req, res) => {
 
 exports.updateFollowup= async (req,res) => {
     try{
-        const followup = await Followup.findByIdAndUpdate(req.params.id,req.body,{new:true})
+        const followup = await Followup.findByIdAndUpdate(req.params.id,req.body,{new:true}).populate("lead");
         if(!followup){
             return res.status(404).json({error:"Followup not found"})
         }
@@ -72,7 +72,7 @@ exports.updateFollowup= async (req,res) => {
 
 exports.deleteFollowup = async (req,res) => {
     try{
-        const followup = await Followup.findByIdAndDelete(req.params.id)
+        const followup = await Followup.findByIdAndDelete(req.params.id).populate("lead");
         if(!followup){
             return res.status(404).json({error:"Followup not found"})
         }
