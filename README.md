@@ -1,6 +1,4 @@
 <div align="center">
-  <!-- Hero Banner Placeholder -->
-  <img src="https://via.placeholder.com/1000x300.png?text=CRM+Pro+Hero+Banner&bg=0f172a&text_color=ffffff" alt="CRM Pro Hero Banner" />
 
   <h1>🚀 CRM Pro - Follow-up Management System</h1>
   <p><i>A modern, role-based CRM for managing leads, tracking follow-ups, and driving sales growth.</i></p>
@@ -30,7 +28,6 @@
     <li><a href="#-api-modules">API Modules</a></li>
     <li><a href="#-installation-guide">Installation Guide</a></li>
     <li><a href="#-environment-variables">Environment Variables</a></li>
-    <li><a href="#-screenshots">Screenshots</a></li>
     <li><a href="#-deployment">Deployment</a></li>
     <li><a href="#-future-enhancements">Future Enhancements</a></li>
     <li><a href="#-author">Author</a></li>
@@ -179,18 +176,6 @@ Follow these steps to run the project locally.
 
 ---
 
-## 📸 Screenshots
-
-### Dashboard Analytics
-![Dashboard](./screenshots/dashboard.png)
-
-### Lead Management
-![Leads](./screenshots/leads.png)
-
-### Follow-up History
-![Follow-ups](./screenshots/followups.png)
-
----
 
 ## 🚀 Deployment
 
@@ -221,15 +206,6 @@ The Node.js server will automatically handle serving the static compiled React U
 <div align="center">
   <h3>Biyaliz Abraham</h3>
   <p>Full-Stack Developer</p>
-  <a href="https://linkedin.com/in/your-profile" target="_blank">
-    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
-  </a>
-  <a href="https://github.com/biyalizabraham08" target="_blank">
-    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
-  </a>
-  <a href="https://your-portfolio.com" target="_blank">
-    <img src="https://img.shields.io/badge/Portfolio-2563EB?style=for-the-badge&logo=globe&logoColor=white" alt="Portfolio" />
-  </a>
 </div>
 
 ---
