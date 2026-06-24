@@ -1,17 +1,20 @@
 const Lead = require('../models/Lead')
+const user = require('../models/User')
+
 
 
 
 
 exports.createLead = async (req,res) => {
     try{
-    const { name,email,mobile,company,status,isDeleted} = req.body
+    const { name,email,mobile,company,status,isDeleted } = req.body
+    const createdBy = req.user.id
 
     if(!name||!email||!mobile||!company){
         return res.status(400).json({error:"Please provide all required fields"})
     }
 
-    const lead = new Lead({ name,email,mobile,company,status,isDeleted })
+    const lead = new Lead({ name,email,mobile,company,status,isDeleted,createdBy })
     await lead.save()
     res.status(201).json(lead)
 }catch(error){
@@ -21,8 +24,26 @@ exports.createLead = async (req,res) => {
 
 exports.getAllLeads = async (req,res) => {
     try{
-        const Leads = await Lead.find({isDeleted:false})
-        res.status(200).json(Leads)
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        const filter = { 
+  createdBy: req.user.id,
+  isDeleted: false
+ };
+        const total = await Lead.countDocuments(filter);
+        const leads = await Lead.find(filter)
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+            data: leads,
+        });
     }catch(error){
         res.status(500).json({error:error.message})
     }
@@ -65,3 +86,44 @@ exports.deleteLead = async (req,res) => {
         res.status(500).json({error:error.message})
     }
 }
+
+exports.searchLeads = async (req, res) => {
+    try {
+        const { name, email, mobile, company, status } = req.query;
+
+        const query = { isDeleted: false };
+
+        if (name) {
+            query.name = { $regex: name, $options:'i'}
+        }
+        if(email){
+            query.email={$regex:email , $options:'i'}
+        }
+        if(mobile){
+            query.mobile= {$regex:mobile}
+        }
+        const leads = await Lead.find(query);
+        res.status(200).json(leads);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.filterByStatus= async (req,res) =>{
+    try{
+
+        const {status} = req.query
+        if(!status){
+            return res.status(400).json({error:"Status is required"})
+        } 
+        const leads= await Lead.find({isDeleted:false,status})
+        res.status(200).json(leads)
+    }
+    catch{
+        res.status(500).json({error: "error.message"})
+
+    }
+}
+
+
+exports.page

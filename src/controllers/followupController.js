@@ -19,7 +19,7 @@ exports.createFollowup = async (req, res) => {
 
 exports.getAllFollowups = async (req,res) => {
     try{
-        const followups =  await Followup.find().populate("leadId")
+        const followups =  await Followup.find().populate("lead")
         res.status(200).json(followups)
     }
     catch (error) {

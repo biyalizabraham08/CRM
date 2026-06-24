@@ -34,7 +34,12 @@ const leadSchema=new mongoose.Schema({
     isDeleted:{
         type:Boolean,
         default:false
-    }
+    },
+    createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true
+}
 
 })
 
