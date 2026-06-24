@@ -16,9 +16,7 @@ const followUpSchema = new mongoose.Schema({
         type: Date,
         required: true
     }
-
-});
-
+}, { timestamps: true });
 
 const Followup = mongoose.model('Followup',followUpSchema);
 

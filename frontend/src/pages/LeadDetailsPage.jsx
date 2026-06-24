@@ -194,15 +194,15 @@ const LeadDetailsPage = () => {
                           <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                             <div>
                               <p className="text-sm text-slate-500 whitespace-pre-wrap">{followup.notes}</p>
-                              {followup.nextFollowupDate && (
+                              {followup.followUpDate && (
                                 <p className="mt-2 text-xs font-medium text-slate-400 flex items-center">
                                   <Calendar className="mr-1 h-3.5 w-3.5" />
-                                  Next Action: {new Date(followup.nextFollowupDate).toLocaleDateString()}
+                                  Scheduled: {new Date(followup.followUpDate).toLocaleDateString()}
                                 </p>
                               )}
                             </div>
                             <div className="text-right text-xs whitespace-nowrap text-slate-500">
-                              {new Date(followup.createdAt || followup.date).toLocaleDateString()}
+                              {new Date(followup.createdAt || followup.followUpDate).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
