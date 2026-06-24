@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
         next();
     } catch (error) {
         console.error('Token verification error:', error); // Debugging line
-        res.status(400).json({ error: 'Invalid token.' });
+        res.status(401).json({ error: 'Invalid or expired token.' });
     }   
 
 }

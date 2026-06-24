@@ -91,17 +91,23 @@ exports.searchLeads = async (req, res) => {
     try {
         const { name, email, mobile, company, status } = req.query;
 
-        const query = { isDeleted: false };
+        const query = { isDeleted: false, createdBy: req.user.id };
+        const orConditions = [];
 
         if (name) {
-            query.name = { $regex: name, $options:'i'}
+            orConditions.push({ name: { $regex: name, $options: 'i' } });
         }
-        if(email){
-            query.email={$regex:email , $options:'i'}
+        if (email) {
+            orConditions.push({ email: { $regex: email, $options: 'i' } });
         }
-        if(mobile){
-            query.mobile= {$regex:mobile}
+        if (mobile) {
+            orConditions.push({ mobile: { $regex: mobile, $options: 'i' } });
         }
+
+        if (orConditions.length > 0) {
+            query.$or = orConditions;
+        }
+
         const leads = await Lead.find(query);
         res.status(200).json(leads);
     } catch (error) {
@@ -116,7 +122,7 @@ exports.filterByStatus= async (req,res) =>{
         if(!status){
             return res.status(400).json({error:"Status is required"})
         } 
-        const leads= await Lead.find({isDeleted:false,status})
+        const leads= await Lead.find({isDeleted:false, status, createdBy: req.user.id})
         res.status(200).json(leads)
     }
     catch{

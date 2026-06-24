@@ -3,9 +3,11 @@ const Followup = require ('../models/FollowUp');
 
 exports.createFollowup = async (req, res) => {
     try {
+        console.log("createFollowup req.body:", req.body);
         const { lead, notes, followUpDate } = req.body;
 
         if(!lead||!notes||!followUpDate) {
+            console.log("Missing fields! lead:", lead, "notes:", notes, "followUpDate:", followUpDate);
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -13,6 +15,7 @@ exports.createFollowup = async (req, res) => {
         await followup.save();
         res.status(201).json(followup);
     } catch (error) {
+        console.error("createFollowup error:", error);
         res.status(400).json({ error: error.message });
     }
 };

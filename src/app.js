@@ -1,7 +1,10 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const authRoutes = require('./routes/authRoutes');
 const leadRoutes = require('./routes/leadRoutes')
+
+app.use(cors());
 app.use(express.json());
 const followUpRouters = require ('./routes/followupRoutes');
 const  dashboardRoutes= require('./routes/dashboardRoutes')
