@@ -21,7 +21,7 @@ const RegisterPage = () => {
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to register');
+      toast.error(error.response?.data?.error || 'Failed to register');
     } finally {
       setLoading(false);
     }
@@ -31,14 +31,14 @@ const RegisterPage = () => {
     <div>
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Username</label>
+          <label className="block text-sm font-medium text-slate-700">Full Name</label>
           <div className="mt-1">
             <input
               type="text"
-              {...register('username', { required: 'Username is required' })}
-              className={`appearance-none block w-full px-3 py-2 border ${errors.username ? 'border-red-300' : 'border-slate-300'} rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+              {...register('name', { required: 'Name is required' })}
+              className={`appearance-none block w-full px-3 py-2 border ${errors.name ? 'border-red-300' : 'border-slate-300'} rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
             />
-            {errors.username && <p className="mt-2 text-sm text-red-600">{errors.username.message}</p>}
+            {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>}
           </div>
         </div>
 
