@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -10,11 +10,12 @@ import MainLayout from './layouts/MainLayout';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import LeadListPage from './pages/LeadListPage';
 import LeadFormPage from './pages/LeadFormPage';
 import LeadDetailsPage from './pages/LeadDetailsPage';
+import EmployeeListPage from './pages/EmployeeListPage';
+import FollowupListPage from './pages/FollowupListPage';
 
 function App() {
   return (
@@ -26,16 +27,20 @@ function App() {
           
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
           </Route>
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/leads" element={<LeadListPage />} />
-            <Route path="/leads/new" element={<LeadFormPage />} />
-            <Route path="/leads/:id/edit" element={<LeadFormPage />} />
             <Route path="/leads/:id" element={<LeadDetailsPage />} />
+            <Route path="/followups" element={<FollowupListPage />} />
+
+            <Route element={<ProtectedRoute adminOnly={true}><Outlet /></ProtectedRoute>}>
+              <Route path="/leads/new" element={<LeadFormPage />} />
+              <Route path="/leads/:id/edit" element={<LeadFormPage />} />
+              <Route path="/employees" element={<EmployeeListPage />} />
+            </Route>
           </Route>
         </Routes>
       </Router>

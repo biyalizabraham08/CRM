@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Edit, CalendarPlus, Trash2, Plus } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { AuthContext } from '../context/AuthContext';
 
 const LeadListPage = () => {
+  const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,6 +123,9 @@ const LeadListPage = () => {
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Mobile</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Company</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Status</th>
+                {user?.role === 'admin' && (
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Assigned To</th>
+                )}
                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -157,6 +162,11 @@ const LeadListPage = () => {
                         {lead.status || 'New'}
                       </span>
                     </td>
+                    {user?.role === 'admin' && (
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                        {lead.assignedTo ? (lead.assignedTo.name || lead.assignedTo.username) : 'Unassigned'}
+                      </td>
+                    )}
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
                       <Link to={`/leads/${lead._id}`} className="text-indigo-600 hover:text-indigo-900 inline-flex" title="Follow-up Details">
                         <CalendarPlus className="h-5 w-5" />

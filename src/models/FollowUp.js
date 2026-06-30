@@ -15,6 +15,11 @@ const followUpSchema = new mongoose.Schema({
     followUpDate: {
         type: Date,
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['Pending', 'Completed'],
+        default: 'Pending'
     }
 }, { timestamps: true });
 

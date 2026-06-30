@@ -1,65 +1,89 @@
 const Lead = require('../models/Lead')
-const user = require('../models/User')
+const User = require('../models/User')
 
 
 
 
 
 exports.createLead = async (req,res) => {
-    try{
-    const { name,email,mobile,company,status,isDeleted } = req.body
-    const createdBy = req.user.id
+  try {
+    const {
+      name,
+      email,
+      mobile,
+      company,
+      status,
+      assignedTo,
+    } = req.body;
 
-    if(!name||!email||!mobile||!company){
-        return res.status(400).json({error:"Please provide all required fields"})
-    }
-
-    const lead = new Lead({ name,email,mobile,company,status,isDeleted,createdBy })
-    await lead.save()
-    res.status(201).json(lead)
-}catch(error){
-    res.status(500).json({error:error.message})
-}}
-
-
-exports.getAllLeads = async (req,res) => {
-    try{
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
-        const skip = (page - 1) * limit;
-
-        const filter = { 
-  createdBy: req.user.id,
-  isDeleted: false
- };
-        const total = await Lead.countDocuments(filter);
-        const leads = await Lead.find(filter)
-            .skip(skip)
-            .limit(limit);
-
-        res.status(200).json({
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit),
-            data: leads,
+    let employee = null;
+    if (assignedTo) {
+      employee = await User.findById(assignedTo);
+      if (!employee) {
+        return res.status(404).json({
+          message: "User not found",
         });
-    }catch(error){
-        res.status(500).json({error:error.message})
+      }
     }
-}
 
-exports.getLeadById = async (req,res) => {
-    try{
-        const lead = await Lead.findById(req.params.id)
-        if(!lead){
-            return res.status(404).json({error:"Lead not found"})
-        }
-        res.status(200).json(lead)
-    }catch(error){
-        res.status(500).json({error:error.message})
+    const lead = await Lead.create({
+      name,
+      email,
+      mobile,
+      company,
+      status,
+      assignedTo: assignedTo || null,
+      createdBy: req.user.id
+    });
+
+    res.status(201).json({
+      message: "Lead created and assigned successfully",
+      lead,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }}
+
+
+
+
+exports.getAllLeads = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    let filter = { isDeleted: false };
+
+    // If employee, show only assigned leads
+    if (req.user.role === "employee") {
+      filter.assignedTo = req.user.id;
     }
-}
+
+    // Admin will see all leads because no assignedTo filter is added
+
+    const total = await Lead.countDocuments(filter);
+
+    const leads = await Lead.find(filter)
+      .populate("assignedTo", "name email")
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      data: leads,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 
 exports.updateLead = async (req,res) => {
     try{
@@ -89,9 +113,13 @@ exports.deleteLead = async (req,res) => {
 
 exports.searchLeads = async (req, res) => {
     try {
-        const { name, email, mobile, company, status } = req.query;
+        const { name, email, mobile, company, status, assignedTo } = req.query;
 
-        const query = { isDeleted: false, createdBy: req.user.id };
+        const query = { isDeleted: false };
+        if (req.user.role === 'employee') {
+            query.assignedTo = req.user.id;
+        }
+        
         const orConditions = [];
 
         if (name) {
@@ -108,7 +136,7 @@ exports.searchLeads = async (req, res) => {
             query.$or = orConditions;
         }
 
-        const leads = await Lead.find(query);
+        const leads = await Lead.find(query).populate('assignedTo', 'name email');
         res.status(200).json(leads);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -122,7 +150,13 @@ exports.filterByStatus= async (req,res) =>{
         if(!status){
             return res.status(400).json({error:"Status is required"})
         } 
-        const leads= await Lead.find({isDeleted:false, status, createdBy: req.user.id})
+        
+        const query = { isDeleted: false, status };
+        if (req.user.role === 'employee') {
+            query.assignedTo = req.user.id;
+        }
+        
+        const leads = await Lead.find(query).populate('assignedTo', 'name email');
         res.status(200).json(leads)
     }
     catch{
@@ -131,5 +165,18 @@ exports.filterByStatus= async (req,res) =>{
     }
 }
 
-
-exports.page
+exports.getLeadById = async (req, res) => {
+    try {
+        const query = { _id: req.params.id, isDeleted: false };
+        if (req.user.role === 'employee') {
+            query.assignedTo = req.user.id;
+        }
+        const lead = await Lead.findOne(query).populate('assignedTo', 'username email name');
+        if (!lead) {
+            return res.status(404).json({ error: "Lead not found" });
+        }
+        res.status(200).json(lead);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

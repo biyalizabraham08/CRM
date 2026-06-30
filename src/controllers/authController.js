@@ -37,7 +37,7 @@ exports.loginUser = async (req, res) => {
     return res.status(400).json({ error: 'Invalid email or password' });
   }
 
-  const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: user._id, email: user.email, role: user.role, name: user.name }, process.env.JWT_SECRET, {
     expiresIn: '1h',
   });
 
@@ -92,7 +92,7 @@ exports.demoLogin = async (req, res) => {
     ]);
 
     // Issue token
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role, name: user.name }, process.env.JWT_SECRET, {
       expiresIn: '24h', // Longer expiry for demo
     });
 

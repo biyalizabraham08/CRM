@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Users, UserCheck, Clock, Calendar, Percent, ArrowRight, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useContext } from 'react';
+import { Users, UserCheck, Clock, Calendar, Percent, ArrowRight, CheckCircle, UserPlus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { AuthContext } from '../context/AuthContext';
 
 const StatCard = ({ title, value, icon: Icon, colorClass }) => (
   <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-slate-200 p-5 flex items-center transition-all hover:shadow-md">
@@ -20,6 +21,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass }) => (
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'];
 
 const DashboardPage = () => {
+  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState({
     total: 0,
     convertedLeads: 0,
@@ -64,15 +66,36 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-8">Dashboard Overview</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard Overview</h1>
+        {user?.role === 'admin' && (
+          <Link
+            to="/employees"
+            state={{ openAddModal: true }}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Employee
+          </Link>
+        )}
+      </div>
       
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-        <StatCard title="Total Leads" value={stats.total || 0} icon={Users} colorClass="bg-indigo-500" />
+        {user?.role === 'admin' ? (
+          <StatCard title="Total Leads" value={stats.total || 0} icon={Users} colorClass="bg-indigo-500" />
+        ) : (
+          <StatCard title="My Leads" value={stats.total || 0} icon={Users} colorClass="bg-indigo-500" />
+        )}
         <StatCard title="Converted Leads" value={stats.convertedLeads || 0} icon={UserCheck} colorClass="bg-emerald-500" />
         <StatCard title="Pending Follow-ups" value={stats.pendingFollowUps || 0} icon={Clock} colorClass="bg-amber-500" />
         <StatCard title="Today's Follow-ups" value={stats.todaysFollowUps || 0} icon={Calendar} colorClass="bg-red-500" />
-        <StatCard title="Conversion Rate" value={`${conversionRate}%`} icon={Percent} colorClass="bg-violet-500" />
+        {user?.role === 'admin' && (
+          <>
+            <StatCard title="Conversion Rate" value={`${conversionRate}%`} icon={Percent} colorClass="bg-violet-500" />
+            <StatCard title="Total Employees" value={stats.totalEmployees || 0} icon={Users} colorClass="bg-blue-500" />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

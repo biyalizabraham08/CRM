@@ -26,6 +26,11 @@ const leadSchema=new mongoose.Schema({
         minlength:2,
         maxength:100
     },
+    assignedTo : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+},
     status:{
         type:String,
         enum:['New','Contacted','Interested','Not Interested','Converted'],

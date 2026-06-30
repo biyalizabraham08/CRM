@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { AuthContext } from '../context/AuthContext';
 
 const LeadFormPage = () => {
   const { id } = useParams();
@@ -12,6 +13,22 @@ const LeadFormPage = () => {
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditMode);
+  const { user } = useContext(AuthContext);
+  const [employees, setEmployees] = useState([]);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      const fetchEmployees = async () => {
+        try {
+          const response = await api.get('/api/users/employees');
+          setEmployees(response.data);
+        } catch (error) {
+           console.error("Failed to load employees", error);
+        }
+      };
+      fetchEmployees();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -24,6 +41,9 @@ const LeadFormPage = () => {
           setValue('mobile', lead.mobile);
           setValue('company', lead.company);
           setValue('status', lead.status);
+          if (lead.assignedTo) {
+             setValue('assignedTo', lead.assignedTo._id || lead.assignedTo);
+          }
         } catch (error) {
           toast.error('Failed to load lead details');
           navigate('/leads');
@@ -134,6 +154,23 @@ const LeadFormPage = () => {
                     <option value="Qualified">Qualified</option>
                     <option value="Converted">Converted</option>
                     <option value="Lost">Lost</option>
+                  </select>
+                </div>
+              </div>
+            )}
+            
+            {user?.role === 'admin' && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Assign Employee</label>
+                <div className="mt-1">
+                  <select
+                    {...register('assignedTo')}
+                    className="block w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select Employee (Optional)</option>
+                    {employees.map((emp) => (
+                      <option key={emp._id} value={emp._id}>{emp.name || emp.username}</option>
+                    ))}
                   </select>
                 </div>
               </div>

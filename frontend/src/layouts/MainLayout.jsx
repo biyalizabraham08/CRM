@@ -1,24 +1,68 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Home, Users, UserPlus, LogOut, Menu, X } from 'lucide-react';
+import { Home, Users, LogOut, Menu, X, Briefcase, Calendar } from 'lucide-react';
 
 const MainLayout = () => {
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Leads', href: '/leads', icon: Users },
-    { name: 'Add Lead', href: '/leads/new', icon: UserPlus },
-  ];
+  const navigation = [];
+  
+  if (user?.role === 'admin') {
+    navigation.push({ name: 'Dashboard', href: '/dashboard', icon: Home });
+    navigation.push({ name: 'Employees', href: '/employees', icon: Users });
+    navigation.push({ name: 'Leads', href: '/leads', icon: Briefcase });
+    navigation.push({ name: 'Follow-ups', href: '/followups', icon: Calendar });
+  } else {
+    navigation.push({ name: 'Dashboard', href: '/dashboard', icon: Home });
+    navigation.push({ name: 'My Leads', href: '/leads', icon: Briefcase });
+    navigation.push({ name: 'Follow-ups', href: '/followups', icon: Calendar });
+  }
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const UserFooter = () => (
+    <div className="flex flex-col w-full space-y-1">
+      <div className="flex items-center px-3 py-3 border-b border-slate-800 mb-1">
+         <div className="flex-shrink-0">
+            <div className="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-slate-800">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+         </div>
+         <div className="ml-3 min-w-0 flex-1">
+            <p className="text-sm font-medium text-white truncate">{user?.name || 'User'}</p>
+            <div className="mt-1">
+              {user?.role === 'admin' ? (
+                <span className="inline-flex items-center rounded-md bg-indigo-400/10 px-2 py-0.5 text-xs font-medium text-indigo-400 ring-1 ring-inset ring-indigo-400/30">Administrator</span>
+              ) : (
+                <span className="inline-flex items-center rounded-md bg-slate-400/10 px-2 py-0.5 text-xs font-medium text-slate-400 ring-1 ring-inset ring-slate-400/30">Employee</span>
+              )}
+            </div>
+         </div>
+      </div>
+      <button
+        onClick={handleLogout}
+        className="flex-shrink-0 group block w-full text-left"
+      >
+        <div className="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <div>
+            <LogOut className="inline-block h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+              Logout
+            </p>
+          </div>
+        </div>
+      </button>
+    </div>
+  );
 
   return (
     <div className="h-screen flex overflow-hidden bg-slate-50">
@@ -61,21 +105,7 @@ const MainLayout = () => {
             </nav>
           </div>
           <div className="flex-shrink-0 flex bg-slate-950 p-4">
-            <button
-              onClick={handleLogout}
-              className="flex-shrink-0 group block w-full text-left"
-            >
-              <div className="flex items-center">
-                <div>
-                  <LogOut className="inline-block h-6 w-6 text-slate-400 group-hover:text-white transition-colors" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-base font-medium text-slate-300 group-hover:text-white transition-colors">
-                    Logout
-                  </p>
-                </div>
-              </div>
-            </button>
+            <UserFooter />
           </div>
         </div>
       </div>
@@ -110,21 +140,7 @@ const MainLayout = () => {
               </nav>
             </div>
             <div className="flex-shrink-0 flex bg-slate-950 p-4 border-t border-slate-800">
-              <button
-                onClick={handleLogout}
-                className="flex-shrink-0 group block w-full text-left"
-              >
-                <div className="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                  <div>
-                    <LogOut className="inline-block h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
-                      Logout
-                    </p>
-                  </div>
-                </div>
-              </button>
+              <UserFooter />
             </div>
           </div>
         </div>

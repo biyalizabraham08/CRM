@@ -1,70 +1,87 @@
 const mongoose = require('mongoose');
 const Lead = require('../models/Lead')
 const FollowUp = require('../models/FollowUp')
+const User = require('../models/User')
 
-exports.getDashBoardStats = async (req,res) =>{
-    try{
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
-        const userId = req.user.id;
+exports.getDashboardStats = async (req, res) => {
+  try {
+    let leadFilter = { isDeleted: false };
+    let followupFilter = {};
 
-        const userLeads = await Lead.find({ createdBy: userId, isDeleted: false }).select('_id');
-        const userLeadIds = userLeads.map(l => l._id);
-
-        const total = userLeads.length;
-
-        const convertedLeads = await Lead.countDocuments({
-            createdBy: userId,
-            status: "Converted",
-            isDeleted: false
-        });
-
-        const pendingFollowUps = await FollowUp.countDocuments({
-            lead: { $in: userLeadIds },
-            followUpDate: { $gte: new Date() }
-        });
-
-        const todaysFollowUps = await FollowUp.countDocuments({
-            lead: { $in: userLeadIds },
-            followUpDate: { $gte: startOfDay, $lte: endOfDay }
-        });
-
-        // 1. Recent Leads
-        const recentLeads = await Lead.find({
-            createdBy: userId,
-            isDeleted: false
-        }).sort({ createdAt: -1 }).limit(5).select('name company status _id');
-
-        // 2. Upcoming Follow-ups
-        const upcomingFollowUps = await FollowUp.find({
-            lead: { $in: userLeadIds },
-            followUpDate: { $gte: startOfDay }
-        }).sort({ followUpDate: 1 }).limit(5).populate('lead', 'name');
-
-        // 3. Status Distribution
-        const statusDistribution = await Lead.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(userId), isDeleted: false } },
-            { $group: { _id: { $cond: [ { $eq: ["$status", null] }, "New", "$status" ] }, count: { $sum: 1 } } }
-        ]);
-
-        res.status(200).json({
-            total,
-            convertedLeads,
-            pendingFollowUps,
-            todaysFollowUps,
-            recentLeads,
-            upcomingFollowUps,
-            statusDistribution: statusDistribution.map(item => ({
-                name: item._id || 'New',
-                value: item.count
-            }))
-        })
-
+    // Employee sees only assigned leads
+    if (req.user.role === "employee") {
+      leadFilter.assignedTo = new mongoose.Types.ObjectId(req.user.id);
+      
+      const userLeads = await Lead.find({ assignedTo: req.user.id }).select('_id');
+      const userLeadIds = userLeads.map(l => l._id);
+      followupFilter.lead = { $in: userLeadIds };
     }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
+
+    const totalLeads = await Lead.countDocuments(leadFilter);
+
+    const convertedLeads = await Lead.countDocuments({
+      ...leadFilter,
+      status: "Converted",
+    });
+
+    const pendingFollowups = await FollowUp.countDocuments({
+      ...followupFilter,
+      status: "Pending",
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const todaysFollowups = await FollowUp.countDocuments({
+      ...followupFilter,
+      followUpDate: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+    
+    const recentLeads = await Lead.find(leadFilter)
+        .sort({ _id: -1 })
+        .limit(5);
+
+    const upcomingFollowUps = await FollowUp.find({
+        ...followupFilter,
+        status: 'Pending'
+    })
+        .populate('lead', 'name')
+        .sort({ followUpDate: 1 })
+        .limit(5);
+
+    const statusDistribution = await Lead.aggregate([
+        { $match: leadFilter },
+        { $group: { _id: "$status", value: { $sum: 1 } } },
+        { $project: { name: "$_id", value: 1, _id: 0 } }
+    ]);
+
+    const response = {
+      total: totalLeads,
+      convertedLeads,
+      pendingFollowUps: pendingFollowups,
+      todaysFollowUps: todaysFollowups,
+      recentLeads,
+      upcomingFollowUps,
+      statusDistribution
+    };
+
+    // Admin gets one extra statistic
+    if (req.user.role === "admin") {
+      response.totalEmployees = await User.countDocuments({
+        role: "employee",
+      });
     }
-}
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

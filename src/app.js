@@ -8,12 +8,14 @@ app.use(cors());
 app.use(express.json());
 const followUpRouters = require ('./routes/followupRoutes');
 const  dashboardRoutes= require('./routes/dashboardRoutes')
+const userRoutes = require("./routes/userRoutes");
 
 
 const path = require('path');
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use("/api/users", userRoutes);
 app.use('/api/lead', leadRoutes);
 app.use('/api/followup', followUpRouters);
 app.use('/api/dashboard', dashboardRoutes);
