@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, Edit, CalendarPlus, Trash2, Plus } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -13,19 +13,25 @@ const LeadListPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchParams] = useSearchParams();
+  const assignedTo = searchParams.get('assignedTo');
 
   const fetchLeads = async () => {
     setLoading(true);
     try {
       let url = '/api/lead';
       let params = { page, limit: 10 };
+      
+      if (assignedTo) {
+        params.assignedTo = assignedTo;
+      }
 
       if (searchTerm) {
         url = '/api/lead/search';
-        params = { name: searchTerm, email: searchTerm, mobile: searchTerm };
+        params = { name: searchTerm, email: searchTerm, mobile: searchTerm, ...(assignedTo && { assignedTo }) };
       } else if (statusFilter) {
         url = '/api/lead/status';
-        params = { status: statusFilter };
+        params = { status: statusFilter, ...(assignedTo && { assignedTo }) };
       }
 
       const response = await api.get(url, { params });
@@ -41,7 +47,7 @@ const LeadListPage = () => {
 
   useEffect(() => {
     fetchLeads();
-  }, [searchTerm, statusFilter, page]);
+  }, [searchTerm, statusFilter, page, assignedTo]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {

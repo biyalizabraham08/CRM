@@ -3,13 +3,14 @@ import { Users, UserPlus, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 const EmployeeListPage = () => {
   const { user } = useContext(AuthContext);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(location.state?.openAddModal || false);
   
   useEffect(() => {
@@ -97,7 +98,11 @@ const EmployeeListPage = () => {
             <tbody className="bg-white divide-y divide-slate-200">
               {employees.length > 0 ? (
                 employees.map((employee) => (
-                  <tr key={employee._id} className="hover:bg-slate-50">
+                  <tr 
+                    key={employee._id} 
+                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/leads?assignedTo=${employee._id}`)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">

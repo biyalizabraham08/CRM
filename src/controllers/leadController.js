@@ -56,10 +56,13 @@ exports.getAllLeads = async (req, res) => {
     const skip = (page - 1) * limit;
 
     let filter = { isDeleted: false };
+    const assignedToFilter = req.query.assignedTo;
 
     // If employee, show only assigned leads
     if (req.user.role === "employee") {
       filter.assignedTo = req.user.id;
+    } else if (assignedToFilter) {
+      filter.assignedTo = assignedToFilter;
     }
 
     // Admin will see all leads because no assignedTo filter is added
@@ -118,6 +121,8 @@ exports.searchLeads = async (req, res) => {
         const query = { isDeleted: false };
         if (req.user.role === 'employee') {
             query.assignedTo = req.user.id;
+        } else if (assignedTo) {
+            query.assignedTo = assignedTo;
         }
         
         const orConditions = [];
@@ -146,7 +151,7 @@ exports.searchLeads = async (req, res) => {
 exports.filterByStatus= async (req,res) =>{
     try{
 
-        const {status} = req.query
+        const {status, assignedTo} = req.query
         if(!status){
             return res.status(400).json({error:"Status is required"})
         } 
@@ -154,6 +159,8 @@ exports.filterByStatus= async (req,res) =>{
         const query = { isDeleted: false, status };
         if (req.user.role === 'employee') {
             query.assignedTo = req.user.id;
+        } else if (assignedTo) {
+            query.assignedTo = assignedTo;
         }
         
         const leads = await Lead.find(query).populate('assignedTo', 'name email');
