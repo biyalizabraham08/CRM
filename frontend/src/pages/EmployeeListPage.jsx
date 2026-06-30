@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { Users, UserPlus, X } from 'lucide-react';
+import { Users, UserPlus, X, Trash2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -72,6 +72,20 @@ const EmployeeListPage = () => {
     }
   };
 
+  const handleDeleteEmployee = async (e, id) => {
+    e.stopPropagation(); // prevent row click navigation
+    if (window.confirm('Are you sure you want to delete this employee?')) {
+      try {
+        await api.delete(`/api/users/employees/${id}`);
+        toast.success('Employee deleted successfully');
+        const response = await api.get('/api/users/employees');
+        setEmployees(response.data);
+      } catch (error) {
+        toast.error('Failed to delete employee');
+      }
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -93,6 +107,7 @@ const EmployeeListPage = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
+                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
@@ -120,6 +135,17 @@ const EmployeeListPage = () => {
                       <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-blue-100 text-blue-800">
                         {employee.role}
                       </span>
+                    </td>
+                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      {user._id !== employee._id && (
+                        <button
+                          onClick={(e) => handleDeleteEmployee(e, employee._id)}
+                          className="text-red-600 hover:text-red-900 inline-flex"
+                          title="Delete Employee"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

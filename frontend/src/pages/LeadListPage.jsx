@@ -180,9 +180,11 @@ const LeadListPage = () => {
                       <Link to={`/leads/${lead._id}/edit`} className="text-slate-600 hover:text-slate-900 inline-flex" title="Edit">
                         <Edit className="h-5 w-5" />
                       </Link>
-                      <button onClick={() => handleDelete(lead._id)} className="text-red-600 hover:text-red-900 inline-flex" title="Delete">
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      {user?.role === 'admin' && (
+                        <button onClick={() => handleDelete(lead._id)} className="text-red-600 hover:text-red-900 inline-flex" title="Delete">
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
